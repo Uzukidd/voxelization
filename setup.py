@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     setup(
         name='voxel_ops',
-        packages=find_packages(),
+        packages=find_packages(exclude = ["test", "data"]),
         cmdclass={
             'build_ext': BuildExtension,
         },

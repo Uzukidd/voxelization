@@ -82,13 +82,16 @@ class _Voxelization(Function):
             voxels_out = voxels[:voxel_num]
             coors_out = coors[:voxel_num]
             num_points_per_voxel_out = num_points_per_voxel[:voxel_num]
-            ctx.save_for_backward(point_to_voxelidx, coor_to_voxelidx)
-            ctx.mark_non_differentiable(coors_out, num_points_per_voxel_out)
+            ctx.save_for_backward(
+                point_to_voxelidx, coor_to_voxelidx, torch.tensor(deterministic, dtype=torch.bool))
+            ctx.mark_non_differentiable(
+                coors_out, num_points_per_voxel_out)
             return voxels_out, coors_out, num_points_per_voxel_out
         
     @staticmethod
     def backward(ctx, grad_voxels_out, grad_coors_out, grad_num_points_per_voxel_out):
-        (point_to_voxelidx, coor_to_voxelidx) = ctx.saved_tensors
+        (point_to_voxelidx, coor_to_voxelidx, deterministic) = ctx.saved_tensors
+        assert deterministic.item(), "voxelization is differentiable only when deterministic equal to True"
         return grad_voxels_out[coor_to_voxelidx.long(), point_to_voxelidx.long()], None, None, None, None, None
 
 
@@ -145,7 +148,7 @@ class Voxelization(nn.Module):
     def forward(self, input):
         """
         Args:
-            input: NC points
+            input: NxC points
         """
 
         return voxelization(
