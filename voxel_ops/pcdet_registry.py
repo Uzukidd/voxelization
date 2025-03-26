@@ -44,6 +44,8 @@ def differentiable_voxelize(self, data_dict=None, config=None):
     if config.RETAIN_GRAPH:
         data_dict['points_gen_voxels'] = points_torch
         data_dict['voxels'] = voxels
+    elif config.END_TO_END_MODE:
+        data_dict['voxels'] = voxels
     else:
         data_dict['voxels'] = voxels.detach().cpu().numpy()
         
